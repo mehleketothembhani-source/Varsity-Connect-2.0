@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SFU Connect – Student networking, mentoring, portfolio, skill exchange and collaboration.">
+    <title>SFU Connect</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<!-- AUTH -->
+<div id="authScreen" class="auth-screen">
+    <div class="auth-card">
+        <div class="logo-circle">SFU</div>
+        <h1>SFU Connect</h1>
+        <p class="subtitle">Connect. Learn. Mentor. Build. Achieve.</p>
+        <div class="auth-tabs">
+            <button id="loginTab" class="auth-tab active" onclick="showAuth('login')">Login</button>
+            <button id="registerTab" class="auth-tab" onclick="showAuth('register')">Register</button>
+        </div>
+        <form id="loginForm">
+            <input id="loginEmail" type="email" placeholder="SFU student email" required>
+            <input id="loginPassword" type="password" placeholder="Password" required>
+            <button class="primary-button" type="submit">Login</button>
+            <button type="button" class="link-button" onclick="showAuth('forgot')">Forgot password?</button>
+        </form>
+        <form id="registerForm" class="hidden">
+            <input id="registerName" placeholder="Full name" required>
+            <input id="registerStudentNumber" placeholder="Student number" required>
+            <input id="registerEmail" type="email" placeholder="student@sfu.ca" required>
+            <input id="registerPassword" type="password" placeholder="Password (12+ characters)" minlength="12" required>
+            <input id="registerFaculty" placeholder="Faculty">
+            <input id="registerCourse" placeholder="Programme / course">
+            <button class="primary-button" type="submit">Create SFU Account</button>
+        </form>
+        <form id="forgotForm" class="hidden">
+            <input id="forgotEmail" type="email" placeholder="SFU student email" required>
+            <button class="primary-button" type="submit">Send reset link</button>
+            <button type="button" class="link-button" onclick="showAuth('login')">Back to login</button>
+        </form>
+        <form id="resetForm" class="hidden">
+            <input id="resetPassword" type="password" placeholder="New password (12+)" minlength="12" required>
+            <button class="primary-button" type="submit">Update password</button>
+        </form>
+        <p id="authMessage" class="message"></p>
+    </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="app hidden">
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon">SFU</div>
+            <div>
+                <strong>SFU Connect</strong>
+                <small>Student Network</small>
+            </div>
+        </div>
+        <nav>
+            <button onclick="showPage('home')">🏠 Home</button>
+            <button onclick="showPage('discover')">📍 Around Me</button>
+            <button onclick="showPage('people')">👥 People</button>
+            <button onclick="showPage('groups')">📚 Groups</button>
+            <button onclick="showPage('projects')">🔬 Projects</button>
+            <button onclick="showPage('skills')">🔄 Skills</button>
+            <button onclick="showPage('rooms')">🎥 Rooms</button>
+            <button onclick="showPage('portfolio')">📁 Portfolio</button>
+            <button onclick="showPage('ai')">🤖 AI</button>
+        </nav>
+        <div class="topbar-right">
+            <button class="icon-btn" onclick="toggleNotifications()" title="Notifications">🔔 <span id="notifBadge" class="badge hidden">0</span></button>
+            <button class="icon-btn" onclick="toggleDark()" title="Theme">🌓</button>
+            <button class="logout-button" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <div id="notifPanel" class="notif-panel hidden">
+        <div class="notif-header">
+            <strong>Notifications</strong>
+            <button class="small-button" onclick="markAllRead()">Mark all read</button>
+        </div>
+        <div id="notifList"></div>
+    </div>
+
+    <main class="main-container">
+        <!-- HOME -->
+        <section id="homePage" class="page">
+            <div class="hero-card">
+                <div>
+                    <span class="eyebrow">SFU STUDENT COMMUNITY</span>
+                    <h1>Your campus.<br>Your network.</h1>
+                    <p>Find mentors, exchange skills, collaborate on research, build your portfolio and study together in live rooms.</p>
+                </div>
+                <div class="hero-bubble">🎓</div>
+            </div>
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header"><h2>Share an update</h2></div>
+                    <textarea id="statusText" maxlength="1000" placeholder="What have you achieved or learned today?"></textarea>
+                    <label class="checkbox"><input id="achievementCheck" type="checkbox"> Mark as achievement</label>
+                    <button class="primary-button" onclick="postStatus()">Share</button>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h2>Community rules</h2><span class="safe-badge">SAFE</span></div>
+                    <ul class="rules">
+                        <li>Respect every student.</li>
+                        <li>No bullying or harassment.</li>
+                        <li>No threats or hate speech.</li>
+                        <li>Report inappropriate behaviour.</li>
+                        <li>Protect private information.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h2>Student feed</h2>
+                    <button class="small-button" onclick="loadFeed()">Refresh</button>
+                </div>
+                <div id="feed"></div>
+            </div>
+        </section>
+
+        <!-- DISCOVER / AROUND ME -->
+        <section id="discoverPage" class="page hidden">
+            <div class="page-heading">
+                <span class="eyebrow">AROUND ME</span>
+                <h1>What’s happening near you</h1>
+                <p>Share approximate location to see nearby mentors, active study rooms and open projects.</p>
+            </div>
+            <div class="card location-card">
+                <div class="location-icon">📍</div>
+                <div>
+                    <h2>Location discovery</h2>
+                    <p>Exact coordinates are never shown. Data expires automatically.</p>
+                </div>
+                <button class="primary-button" onclick="shareLocation()">Update & find</button>
+            </div>
+            <div id="aroundMe" class="around-grid"></div>
+        </section>
+
+        <!-- PEOPLE YOU MAY KNOW -->
+        <section id="peoplePage" class="page hidden">
+            <div class="page-heading">
+                <span class="eyebrow">CONNECTIONS</span>
+                <h1>People you may know</h1>
+                <p>Suggested by shared faculty, programme, skills and groups.</p>
+            </div>
+            <div id="peopleList" class="mentor-grid"></div>
+        </section>
+
+        <!-- GROUPS -->
+        <section id="groupsPage" class="page hidden">
+            <div class="page-heading">
+                <span class="eyebrow">COMMUNITIES</span>
+                <h1>Student groups</h1>
+            </div>
+            <div class="card">
+                <h2>Create a group</h2>
+                <div class="form-grid">
+                    <input id="groupName" placeholder="Group name">
+                    <input id="groupFaculty" placeholder="Faculty">
+                    <input id="groupTopic" placeholder="Topic">
+                    <input id="groupDescription" placeholder="Description">
+                </div>
+                <button class="primary-button" onclick="createGroup()">Create group</button>
+            </div>
+            <div id="groups" class="group-grid"></div>
+            <div id="groupDetail" class="card hidden">
+                <div class="card-header">
+                    <h2 id="groupDetailName">Group</h2>
+                    <button class="small-button" onclick="closeGroupDetail()">Close</button>
+                </div>
+                <div class="form-grid" style="margin-bottom:12px">
+                    <input id="groupPostText" placeholder="Write a post…">
+                    <button class="primary-button" onclick="createGroupPost()">Post</button>
+                </div>
+                <button class="primary-button" style="margin-bottom:16px" onclick="createRoomFromGroup()">Start study room</button>
+                <div id="groupPosts"></div>
+            </div>
+        </section>
+
+        <!-- PROJECTS -->
+        <section id="projectsPage" class="page hidden">
+            <div class="page-heading">
+                <span class="eyebrow">RESEARCH & COLLABORATION</span>
+                <h1>Projects</h1>
+                <p>Find collaborators or start your own research / side project.</p>
+            </div>
+            <div class="card">
+                <h2>Start a project</h2>
+                <div class="form-grid">
+                    <input id="projectTitle" placeholder="Project title">
+                    <input id="projectLooking" placeholder="Skills needed (comma separated)">
+                </div>
+                <textarea id="projectDesc" placeholder="Short description"></textarea>
+                <button class="primary-button" onclick="createProject()">Create project</button>
+            </div>
+            <div id="projects" class="group-grid"></div>
+        </section>
+
+        <!-- SKILL EXCHANGE -->
+        <section id="skillsPage" class="page hidden">
+            <div class="page-heading">
+                <span class="eyebrow">SKILL MATCH & EXCHANGE</span>
+                <h1>Teach & learn</h1>
+                <p>Offer a skill you know and request one you want to learn.</p>
+            </div>
+            <div class="card">
+                <h2>Create an exchange offer</h2>
+                <div class="form-grid">
+                    <input id="offerSkill" placeholder="I can teach…">
+                    <input id="requestSkill" placeholder="I want to learn…">
+                </div>
+                <input id="exchangeMsg" placeholder="Optional message">
+                <button class="primary-button" onclick="createSkillExchange()">Post offer</button>
+            </div>
+            <div id="skillExchanges" class="group-grid"></div>
+        </section>
+
+        <!-- ROOMS -->
+        <section id="roomsPage" class="page hidden">
+            <div class="page-heading">
+                <span class="eyebrow">LIVE COLLABORATION</span>
+                <h1>Joint Rooms</h1>
+            </div>
+            <div class="card">
+                <div class="room-warning">
+                    🛡️
+                    <div>
+                        <strong>Safe-room policy</strong>
+                        <p>Bullying, harassment and discriminatory behaviour are prohibited.</p>
+                    </div>
+                </div>
+            </div>
+            <div id="rooms" class="room-grid"></div>
+            <div id="videoRoom" class="video-room hidden">
+                <div class="video-room-header">
+                    <div>
+                        <span class="eyebrow">LIVE ROOM</span>
+                        <h2 id="activeRoomName">Study Room</h2>
+                    </div>
+                    <button class="danger-button" onclick="leaveVideoRoom()">Leave Room</button>
+                </div>
+                <div id="videoGrid" class="video-grid"></div>
+                <div class="room-controls">
+                    <button onclick="toggleCamera()" id="camBtn">📷 Camera</button>
+                    <button onclick="toggleMicrophone()" id="micBtn">🎙️ Mic</button>
+                    <button onclick="toggleScreen()" id="screenBtn">🖥️ Screen</button>
+                    <button onclick="reportRoom()">🚩 Report</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PORTFOLIO / PROFILE -->
+        <section id="portfolioPage" class="page hidden">
+            <div class="page-heading">
+                <span class="eyebrow">STUDENT PORTFOLIO</span>
+                <h1>Your professional identity</h1>
+            </div>
+            <div class="profile-card">
+                <div class="profile-avatar">👤</div>
+                <div class="profile-information">
+                    <h1 id="profileName">Student</h1>
+                    <p id="profileHeadline"></p>
+                    <p id="profileFaculty"></p>
+                    <span id="verifiedBadge" class="verification-badge">✓ SFU email verified</span>
+                </div>
+                <button class="primary-button" onclick="downloadCV()">Generate CV</button>
+            </div>
+            <div class="card">
+                <h2>Edit profile & portfolio</h2>
+                <div class="form-grid">
+                    <input id="profileNameInput" placeholder="Name">
+                    <input id="profileHeadlineInput" placeholder="Headline (e.g. CS student · Full-stack)">
+                    <input id="profileFacultyInput" placeholder="Faculty">
+                    <input id="profileCourseInput" placeholder="Course">
+                    <input id="profileYearInput" placeholder="Year of study">
+                    <input id="profileSkillsInput" placeholder="Skills (comma separated)">
+                </div>
+                <textarea id="profileBioInput" placeholder="About you" maxlength="2000"></textarea>
+                <textarea id="portfolioJsonInput" placeholder='Portfolio JSON array, e.g. [{"title":"Project X","subtitle":"Role","date":"2025","description":"..."}]' rows="6"></textarea>
+                <label class="checkbox"><input id="mentorToggle" type="checkbox"> Discoverable as mentor</label>
+                <label class="checkbox"><input id="discoverableToggle" type="checkbox"> Allow discovery</label>
+                <label class="checkbox"><input id="showLocationToggle" type="checkbox"> Share approximate location</label>
+                <label class="checkbox"><input id="showPortfolioToggle" type="checkbox"> Public portfolio</label>
+                <label class="checkbox"><input id="showSkillsToggle" type="checkbox"> Show skills publicly</label>
+                <button class="primary-button" onclick="saveProfile()">Save everything</button>
+            </div>
+        </section>
+
+        <!-- AI ASSISTANT -->
+        <section id="aiPage" class="page hidden">
+            <div class="page-heading">
+                <span class="eyebrow">AI SUPPORT</span>
+                <h1>Academic assistant</h1>
+                <p>Get help with CV, skills, projects, study strategies and more.</p>
+            </div>
+            <div class="card ai-card">
+                <div id="aiChat" class="ai-chat"></div>
+                <div class="ai-input-row">
+                    <input id="aiPrompt" placeholder="Ask anything academic…" maxlength="1000">
+                    <button class="primary-button" onclick="askAI()">Send</button>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>
